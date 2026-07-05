@@ -33,6 +33,7 @@ import DemandBadge from '../components/DemandBadge';
 import ValidationChallengeModal from '../components/ValidationChallengeModal';
 import { CustomSkill, Skill, UserSkill } from '../types';
 import { pathHasProgress, isTestOutEligible } from '../domain/skillGraph';
+import { uid } from '../utils/uid';
 import { VALIDATION_BONUS_XP, MAX_TESTOUT_ATTEMPTS, TESTOUT_QUESTION_COUNT } from '../domain/progression';
 import { getPathDemandLabel, DEMAND_SOURCE_LABEL } from '../data/marketDemand';
 
@@ -184,12 +185,12 @@ function AddCustomModal({ visible, onClose }: { visible: boolean; onClose: () =>
   const [icon, setIcon] = useState('🎯');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState(PALETTE[0]);
-  const [skills, setSkills] = useState<CustomSkill[]>([{ id: `s_${Date.now()}`, name: '', description: '', icon: '⭐' }]);
+  const [skills, setSkills] = useState<CustomSkill[]>([{ id: uid('s'), name: '', description: '', icon: '⭐' }]);
   const [step, setStep] = useState(0);
 
   const reset = () => {
     setName(''); setIcon('🎯'); setDescription(''); setColor(PALETTE[0]);
-    setSkills([{ id: `s_${Date.now()}`, name: '', description: '', icon: '⭐' }]);
+    setSkills([{ id: uid('s'), name: '', description: '', icon: '⭐' }]);
     setStep(0);
   };
 
@@ -198,7 +199,7 @@ function AddCustomModal({ visible, onClose }: { visible: boolean; onClose: () =>
   const handleCreate = () => {
     const validSkills = skills.filter(s => s.name.trim()).map((s, i) => ({
       ...s,
-      id: `custom_skill_${Date.now()}_${i}`,
+      id: uid('custom_skill'),
       name: s.name.trim(),
     }));
     if (!name.trim() || validSkills.length === 0) return;
@@ -208,7 +209,7 @@ function AddCustomModal({ visible, onClose }: { visible: boolean; onClose: () =>
     handleClose();
   };
 
-  const addSkill = () => setSkills(prev => [...prev, { id: `s_${Date.now()}`, name: '', description: '', icon: '⭐' }]);
+  const addSkill = () => setSkills(prev => [...prev, { id: uid('s'), name: '', description: '', icon: '⭐' }]);
   const updateSkill = (index: number, val: string) => setSkills(prev => prev.map((s, i) => i === index ? { ...s, name: val } : s));
   const removeSkill = (index: number) => setSkills(prev => prev.filter((_, i) => i !== index));
 

@@ -94,3 +94,31 @@ describe('loadFromStorage (ARCH-003 versioning)', () => {
     expect(loadFromStorage()).toBeNull();
   });
 });
+
+// ─── isValidBackup (Settings import validation) ────────────────────────────────
+// Guards the export→import round-trip: the app exports the versioned envelope, so
+// import validation must accept it (a previous flat-shape-only check rejected every
+// backup the current app produced).
+import { isValidBackup } from '../persistence';
+
+describe('isValidBackup', () => {
+  it('accepts the current envelope format the app exports', () => {
+    expect(isValidBackup({ v: SCHEMA_VERSION, data: { hasOnboarded: true, user: { xp: 425 } } })).toBe(true);
+    expect(isValidBackup({ v: 1, data: { hasOnboarded: false } })).toBe(true);
+  });
+
+  it('accepts legacy flat backups (pre-envelope exports)', () => {
+    expect(isValidBackup({ hasOnboarded: true, user: { xp: 10 } })).toBe(true);
+    expect(isValidBackup({ user: null, outputs: [] })).toBe(true);
+  });
+
+  it('rejects non-backup JSON', () => {
+    expect(isValidBackup(null)).toBe(false);
+    expect(isValidBackup('a string')).toBe(false);
+    expect(isValidBackup(42)).toBe(false);
+    expect(isValidBackup([1, 2, 3])).toBe(false);
+    expect(isValidBackup({ some: 'random', json: true })).toBe(false);
+    expect(isValidBackup({ v: 1, data: { some: 'other app' } })).toBe(false);
+    expect(isValidBackup({ v: 'x', data: { user: {} } })).toBe(false); // non-numeric version
+  });
+});

@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useAppStore } from '../store/appStore';
+import { isValidBackup } from '../store/persistence';
 import { useThemeColors, ColorsType, Spacing, Radius, FontSize } from '../utils/theme';
 import { useToast } from '../components/Toast';
 import { page, getConsentStatus, setConsent } from '../utils/analytics';
@@ -66,7 +67,10 @@ function importProgress(onResult: (ok: boolean, msg: string) => void): void {
         try {
           const text = reader.result as string;
           const parsed = JSON.parse(text);
-          if (!parsed || typeof parsed !== 'object' || !('user' in parsed || 'hasOnboarded' in parsed)) {
+          // Accepts both the current versioned envelope {v, data} and legacy flat saves.
+          // (The previous inline check only knew the flat shape, so it rejected every
+          // backup the current app exports — the round-trip was broken.)
+          if (!isValidBackup(parsed)) {
             onResult(false, 'That file is not a MaglakbAI backup.');
             return;
           }

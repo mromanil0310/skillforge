@@ -11,6 +11,7 @@ import type {
 } from '../../types';
 import { getLevelFromXP, Colors } from '../../utils/theme';
 import { track, identify } from '../../utils/analytics';
+import { uid } from '../../utils/uid';
 import { CAREER_PATHS } from '../../data/careerPaths';
 import { ALL_SKILLS } from '../../data/skills';
 import { ALL_ACHIEVEMENTS } from '../../data/achievements';
@@ -78,7 +79,7 @@ export const createFeedSlice = (set: Set, get: Get): Pick<AppState, 'reactToPost
     if (!state.user || !text.trim()) return;
     const isOwnPost = state.communityFeed.find((p) => p.id === postId)?.isCurrentUser ?? false;
     const newComment = {
-      id: `c_${Date.now()}`,
+      id: uid('c'),
       userId: state.user.id,
       userName: state.user.name,
       text: text.trim(),

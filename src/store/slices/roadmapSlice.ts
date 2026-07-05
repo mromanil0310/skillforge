@@ -11,6 +11,7 @@ import type {
 } from '../../types';
 import { getLevelFromXP, Colors } from '../../utils/theme';
 import { track, identify } from '../../utils/analytics';
+import { uid } from '../../utils/uid';
 import { CAREER_PATHS } from '../../data/careerPaths';
 import { ALL_SKILLS } from '../../data/skills';
 import { ALL_ACHIEVEMENTS } from '../../data/achievements';
@@ -25,7 +26,7 @@ export const createRoadmapSlice = (set: Set, get: Get): Pick<AppState, 'addCusto
   addCustomPath: ({ name, icon, description, color, skills }) => {
     const state = get();
     track('custom_path_created', { path_name: name, skill_count: skills.length });
-    const newPathId = `custom_${Date.now()}`;
+    const newPathId = uid('custom');
     const newPath: CustomPath = {
       id: newPathId,
       name,
@@ -221,7 +222,7 @@ export const createRoadmapSlice = (set: Set, get: Get): Pick<AppState, 'addCusto
 
   addRoadmapItem: (name: string, icon: string): string => {
     const state = get();
-    const newId = `personal_${Date.now()}`;
+    const newId = uid('personal');
     const newSkill: CustomSkill = { id: newId, name, description: '', icon };
 
     // Find or create the "My Library" personal path
@@ -276,7 +277,7 @@ export const createRoadmapSlice = (set: Set, get: Get): Pick<AppState, 'addCusto
     const state = get();
     const builtIn = CAREER_PATHS.find((p) => p.id === pathId);
     if (!builtIn) return null; // only built-in paths can be forked
-    const newPathId = `custom_${Date.now()}`;
+    const newPathId = uid('custom');
     const skills: CustomSkill[] = builtIn.skillIds.map((skillId) => {
       const s = ALL_SKILLS.find((x) => x.id === skillId);
       return {
@@ -318,7 +319,7 @@ export const createRoadmapSlice = (set: Set, get: Get): Pick<AppState, 'addCusto
   addMilestone: (pathId: string, name: string, icon: string): string | null => {
     const state = get();
     if (!get().isRoadmapEditable(pathId)) return null;
-    const newId = `milestone_${Date.now()}`;
+    const newId = uid('milestone');
     const newSkill: CustomSkill = { id: newId, name, description: '', icon };
     const updatedCustomPaths = state.customPaths.map((p) =>
       p.id === pathId ? { ...p, skills: [...p.skills, newSkill] } : p

@@ -257,15 +257,19 @@ export default function CareerNode({
               Tapping it launches the quiz directly (separate from the node's onPress). */}
           {isCompleted && !validated && (skill as any).validationQuestions?.length > 0 && (
             onTestKnowledge ? (
-              <TouchableOpacity
+              // Pointer-only shortcut, deliberately NOT a button: the whole card is
+              // already a <button> on RN-web, and ANY accessibilityRole="button" child
+              // (Touchable or Text) renders a nested native <button> — invalid DOM
+              // (validateDOMNesting) with ambiguous screen-reader activation. Keyboard
+              // and screen-reader users reach the same action through the accessible
+              // path: card → detail sheet → "Test Your Knowledge" CTA.
+              <Text
+                style={styles.validateNudge}
                 onPress={onTestKnowledge}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel={`Test your knowledge on ${skill.name}`}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                suppressHighlighting
               >
-                <Text style={styles.validateNudge}>Test your knowledge →</Text>
-              </TouchableOpacity>
+                Test your knowledge →
+              </Text>
             ) : (
               <Text style={styles.validateNudge}>Test your knowledge →</Text>
             )

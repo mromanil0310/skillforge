@@ -335,3 +335,27 @@ describe('roadmapSlice — FEAT-001 editable roadmaps', () => {
     expect(after - before).toBe(expectedOutputXP + CUSTOM_SKILL_COMPLETION_XP);
   });
 });
+
+// ─── uid collision safety (feed post clobbering regression) ───────────────────────
+// Two outputs logged in the same millisecond previously minted identical `fp_<ms>`
+// feed-post ids; reactToPost/addComment's id-keyed sync then resolved BOTH user posts
+// to the first match and silently overwrote one with a copy of the other.
+describe('id collision safety', () => {
+  it('same-tick logOutputs mint unique output + feed ids; react/comment cannot clobber', () => {
+    reset();
+    onboard();
+    get().logOutput({ skillId: 'sql-foundations', type: 'script', title: 'First', description: 'short' } as any);
+    get().logOutput({ skillId: 'sql-foundations', type: 'script', title: 'Second', description: 'short' } as any);
+
+    const outIds = get().outputs.map((o) => o.id);
+    const postIds = get().userFeedPosts.map((p) => p.id);
+    expect(new Set(outIds).size).toBe(outIds.length);
+    expect(new Set(postIds).size).toBe(postIds.length);
+
+    // React to a seed post — the id-keyed sync must leave both user posts distinct.
+    const seed = get().communityFeed.find((p) => !p.isCurrentUser)!;
+    get().reactToPost(seed.id, '🔥');
+    const titles = get().userFeedPosts.map((p) => p.outputTitle).sort();
+    expect(titles).toEqual(['First', 'Second']);
+  });
+});
