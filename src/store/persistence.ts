@@ -49,6 +49,19 @@ function getPersistable(state: AppState) {
   };
 }
 
+// Is this parsed JSON a plausible MaglakbAI backup? Accepts BOTH shapes we have ever
+// exported: the current versioned envelope `{ v, data: { user | hasOnboarded, ... } }`
+// (ARCH-003) and the legacy flat save `{ user | hasOnboarded, ... }`. Kept here — next
+// to the envelope definition — so import validation can't silently drift from the
+// persisted format again (the Settings import previously checked only the flat shape
+// and rejected every envelope-format backup the app itself exports).
+export function isValidBackup(parsed: unknown): boolean {
+  const looksLikeSave = (o: unknown): boolean =>
+    isPlainObject(o) && ('user' in o || 'hasOnboarded' in o);
+  if (looksLikeSave(parsed)) return true; // legacy flat backup
+  return isPlainObject(parsed) && typeof parsed.v === 'number' && looksLikeSave(parsed.data);
+}
+
 function isPlainObject(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null && !Array.isArray(x);
 }

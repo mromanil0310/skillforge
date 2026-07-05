@@ -11,6 +11,7 @@ import type {
 } from '../../types';
 import { getLevelFromXP, Colors } from '../../utils/theme';
 import { track, identify } from '../../utils/analytics';
+import { uid } from '../../utils/uid';
 import { CAREER_PATHS } from '../../data/careerPaths';
 import { ALL_SKILLS } from '../../data/skills';
 import { ALL_ACHIEVEMENTS } from '../../data/achievements';
@@ -26,7 +27,7 @@ type Get = StoreApi<AppState>['getState'];
 
 export const createCoreSlice = (set: Set, get: Get): Pick<AppState, 'completeOnboarding' | 'logOutput' | 'validateSkill' | 'testOutSkill' | 'recordTestOutAttempt' | 'logCareerOutcome' | 'deleteCareerOutcome' | 'deleteOutput' | 'useStreakFreeze' | 'markMilestoneCelebrated' | 'clearCelebration' | 'setSelectedSkill' | 'dismissWelcomeCard' | 'resetApp' | 'togglePinOutput'> => ({
   completeOnboarding: (name: string, pathId: CareerPathId | string, email?: string, experienceLevel?: ExperienceLevel) => {
-    const userId = `user_${Date.now()}`;
+    const userId = uid('user');
     const pathMeta = CAREER_PATHS.find(p => p.id === pathId);
     const isBuiltInPath = !!pathMeta;
 
@@ -184,7 +185,7 @@ export const createCoreSlice = (set: Set, get: Get): Pick<AppState, 'completeOnb
     const leveledUp = newLevel > oldLevel;
 
     const newOutput: Output = {
-      id: `out_${Date.now()}`,
+      id: uid('out'),
       skillId: payload.skillId,
       skillName,
       type: payload.type,
@@ -337,7 +338,7 @@ export const createCoreSlice = (set: Set, get: Get): Pick<AppState, 'completeOnb
 
     // Add to feed
     const feedPost: FeedPost = {
-      id: `fp_${Date.now()}`,
+      id: uid('fp'),
       userId: state.user.id,
       userName: state.user.name,
       userHandle: state.user.handle,
@@ -573,7 +574,7 @@ export const createCoreSlice = (set: Set, get: Get): Pick<AppState, 'completeOnb
     const newLevel = getLevelFromXP(newXP);
 
     const outcome: CareerOutcome = {
-      id: `outcome_${Date.now()}`,
+      id: uid('outcome'),
       type: payload.type,
       title: payload.title.trim(),
       company: payload.company?.trim() || undefined,
@@ -600,7 +601,7 @@ export const createCoreSlice = (set: Set, get: Get): Pick<AppState, 'completeOnb
       : `${winLabels[payload.type]}: ${payload.title.trim()}${payload.note ? ` — ${payload.note.trim()}` : ''}`;
 
     const winPost: FeedPost = {
-      id: `fp_win_${Date.now()}`,
+      id: uid('fp_win'),
       userId: state.user.id,
       userName: state.user.name,
       userHandle: state.user.handle,

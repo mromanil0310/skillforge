@@ -14,6 +14,7 @@ import {
 import { useAppStore, CAREER_PATHS } from '../store/appStore';
 import { useThemeColors, ColorsType, Colors, Spacing, Radius, FontSize, PathColors } from '../utils/theme';
 import { CareerPathId, CareerPath, CustomSkill, ExperienceLevel } from '../types';
+import { uid } from '../utils/uid';
 import { getPathDemandLabel, DEMAND_SOURCE_LABEL } from '../data/marketDemand';
 import PrivacyPolicyModal from '../components/PrivacyPolicyModal';
 import TermsOfServiceModal from '../components/TermsOfServiceModal';
@@ -977,7 +978,7 @@ function CustomPathBuilderStep({
     // skills created in the same millisecond can't collide (which would overwrite
     // userSkills progress); fall back to a random suffix where randomUUID is unavailable.
     const skillObjects: CustomSkill[] = trimmedSkills.map((s, i) => ({
-      id: `__skill_${globalThis.crypto?.randomUUID?.() ?? `${i}_${Date.now()}_${Math.random().toString(36).slice(2)}`}`,
+      id: uid('__skill'),
       name: s,
       description: '',
       icon: selectedIcon,

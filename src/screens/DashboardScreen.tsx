@@ -671,12 +671,17 @@ export default function DashboardScreen() {
 
   // 7 dots Mon→Sun for this calendar week
   const weeklyActivityDots = useMemo(() => {
+    // Single time frame: the app keys days by UTC date (todayStr, output.createdAt,
+    // lastActiveDate are all toISOString-based), so derive the week in UTC too.
+    // Previously dayOfWeek used LOCAL getDay() while dateStr was UTC — for PHT users
+    // between 00:00–07:59 local the frames disagree and the "today" dot rendered
+    // under the wrong weekday label.
     const now = new Date();
-    const dayOfWeek = now.getDay(); // 0 = Sun
+    const dayOfWeek = now.getUTCDay(); // 0 = Sun (UTC, matching todayStr)
     const mondayOffset = (dayOfWeek + 6) % 7; // days since Monday
     return (['M', 'T', 'W', 'T', 'F', 'S', 'S'] as const).map((label, i) => {
       const d = new Date(now);
-      d.setDate(now.getDate() - mondayOffset + i);
+      d.setUTCDate(now.getUTCDate() - mondayOffset + i);
       const dateStr = d.toISOString().slice(0, 10);
       const isToday = dateStr === todayStr;
       const isFuture = dateStr > todayStr;
