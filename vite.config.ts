@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
 const extensions = [
@@ -8,7 +9,27 @@ const extensions = [
 ];
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // RR-7 / PERF-002: service worker so the installed PWA boots offline (previously
+    // a cold offline start white-screened — state lived in localStorage but no assets
+    // were cached). Conservative setup: precache the app shell (incl. fonts and the
+    // lazy question-bank chunk so quizzes work offline); autoUpdate activates new
+    // versions on the next load. The hand-authored public/manifest.json is kept.
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      manifest: false,
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,woff2,png,svg}'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        navigateFallback: '/index.html',
+        // Never serve the SPA shell for real files that are missing (e.g. old hashed
+        // chunks after a deploy) — let those 404 so autoUpdate recovers cleanly.
+        navigateFallbackDenylist: [/\.[a-z0-9]+$/i],
+      },
+    }),
+  ],
   resolve: {
     extensions,
     alias: {

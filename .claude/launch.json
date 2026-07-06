@@ -4,8 +4,22 @@
     {
       "name": "maglakbai-web",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite"],
+      "runtimeArgs": [
+        "vite"
+      ],
       "port": 8082,
+      "autoPort": true
+    },
+    {
+      "name": "maglakbai-dist",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "preview",
+        "--port",
+        "4173"
+      ],
+      "port": 4173,
       "autoPort": true
     }
   ]
