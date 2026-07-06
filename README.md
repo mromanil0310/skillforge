@@ -28,6 +28,24 @@ Learn → Build → Log Output → Gain XP → Unlock Milestone → Share → Ge
 
 The differentiator is **proof-based progression**: you don't earn XP for consuming content, you earn it for shipping real outputs.
 
+## A week with MaglakbAI — how it's actually used
+
+*MaglakbAI comes from "maglakbay" — to journey. Here's what the journey looks like in practice.*
+
+**Day 1 — Start where you actually are.** Onboarding takes under a minute: pick one of 19 career paths (or build your own), then tell the app your honest starting point. *Fresh Start* begins at skill one. *Some Foundation* or *Bringing Experience*? The app doesn't just take your word for it — you can **test out** of foundational skills by passing a 10-question knowledge check. All-or-nothing, honor code on screen. Prove it, and the skill is yours; the roadmap opens up ahead of you.
+
+**Days 2–6 — Log what you build, not what you watch.** Finished a SQL script at work? Read a chapter and wrote a real takeaway? Deployed something? Tap **+**, pick the output type, describe it, paste the link. The app grades your *evidence*, not your enthusiasm: a live link makes the output **Verified**, a thoughtful write-up makes it **Documented**, and a bare one-liner stays merely *Logged* — and logged-only work can never complete a skill. Your XP is a number you can defend, because every point traces back to something you actually did.
+
+**The streak that doesn't punish you.** Log on consecutive days and the flame grows — but life happens, so there's a built-in grace day, and every 7-day streak earns a **freeze** you can spend when the week fights back. Burning too hot? The app notices a sprint-then-crash pattern and suggests recovery pace instead of shaming you. The goal is a durable habit, not anxiety.
+
+**Day 7 — The milestone moment.** Enough quality outputs and the skill completes: confetti, the real XP total (every bonus itemized so the math checks out), the next skill unlocking on your Evolution Map — and an optional knowledge check to stamp the skill **Validated**. Then the map shows what's next, and the loop starts again.
+
+**Any week — your proof travels with you.** Your Portfolio gallery collects every verified output into something you can actually show a hiring manager. Your data stays on your device by default, exports to a file you own, and optionally backs up to the cloud with a passwordless magic link. Works offline, installs like an app.
+
+**Who it's for:** students proving they're job-ready, professionals documenting growth beyond the job title, career shifters who need receipts for their new skills, and anyone tired of certificates that say "watched" instead of "built."
+
+👉 Try the pilot: **https://fascinating-kitten-b6a79d.netlify.app** · Full walkthrough: **[User Guide](https://mromanil0310.github.io/app-maglakbai/USER_GUIDE.html)**
+
 ## Features
 
 - **4-step onboarding** — set your name, pick a career path, choose your experience level, and land on your dashboard
@@ -78,6 +96,19 @@ npx expo start
 - **Your data stays on your device** by default (browser `localStorage`). Optional **Cloud Backup** is available via Settings → Cloud Backup — sign in with a Magic Link (no password) to sync across devices via Supabase.
 - **Analytics is opt-in.** Nothing is tracked until you consent, and no personal data (name, email, free text) is ever sent.
 - **Export / Import** is built in so you can back up your progress and move it between browsers or devices.
+
+## How it was built — AI as an engineering partner
+
+This app is itself a proof-of-work: designed, built, and hardened by one person working with AI (Claude) as a hands-on engineering partner — not a chatbot to ask, but a collaborator that writes code, hunts its own bugs, and has to show receipts.
+
+The same standard the app demands from its users was applied to the app:
+
+- **1,310 automated tests** + TypeScript strict mode, gated by CI on every push
+- Every feature merged through **reviewed pull requests** with live in-browser verification
+- Multiple full **release-readiness audits** — the AI found and fixed its own defects, from a broken backup-restore path to streaks that ticked on UTC time instead of Philippine midnight
+- Honest engineering choices documented in the repo: sample community data is labeled PREVIEW, privacy copy tells the truth about where data lives, and unfinished things are called unfinished
+
+Built with **proof, not promises** — all the way down.
 
 ## Roadmap
 
