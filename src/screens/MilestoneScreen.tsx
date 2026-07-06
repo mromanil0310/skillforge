@@ -15,8 +15,9 @@ import { useThemeColors, ColorsType, Colors, Spacing, Radius, FontSize, PathColo
 import { useContext } from 'react';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { track } from '../utils/analytics';
-import { CustomPath, CustomSkill } from '../types';
+import { CustomPath, CustomSkill, ValidationQuestion } from '../types';
 import ValidationChallengeModal from '../components/ValidationChallengeModal';
+import { loadValidationQuestions } from '../data/validationCatalog';
 
 type MilestoneRouteProps = RouteProp<RootStackParamList, 'MilestoneDetail'>;
 
@@ -175,6 +176,15 @@ export default function MilestoneScreen() {
       if (found) { customSkill = found; customSkillPath = cp; break; }
     }
   }
+
+  // RR-6: the question bank is a lazy chunk — fetch this skill's questions once on
+  // mount so the "Prove you know it" card can gate + count on real data.
+  const [quizQuestions, setQuizQuestions] = useState<ValidationQuestion[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    loadValidationQuestions(builtInSkill).then((qs) => { if (alive) setQuizQuestions(qs); });
+    return () => { alive = false; };
+  }, [skillId]);
 
   const skill = builtInSkill
     ? builtInSkill
@@ -475,12 +485,12 @@ export default function MilestoneScreen() {
         </Animated.View>
 
         {/* Validation challenge offer */}
-        {builtInSkill?.validationQuestions?.length && !userSkills[skillId]?.validated && (
+        {!!quizQuestions?.length && !userSkills[skillId]?.validated && (
           <Animated.View style={[styles.validationCard, { opacity: contentOpacity, borderColor: resolvedPathColor.border }]}>
             <View style={styles.validationCardLeft}>
               <Text style={styles.validationCardTitle}>Prove you know it 🎓</Text>
               <Text style={styles.validationCardSub}>
-                Answer {builtInSkill.validationQuestions!.length} questions · earn +100 XP · get the Validated badge
+                Answer {quizQuestions.length} questions · earn +100 XP · get the Validated badge
               </Text>
             </View>
             <TouchableOpacity
@@ -535,12 +545,12 @@ export default function MilestoneScreen() {
       </ScrollView>
 
       {/* Knowledge challenge modal */}
-      {builtInSkill?.validationQuestions && (
+      {!!quizQuestions?.length && (
         <ValidationChallengeModal
           visible={showValidation}
           skillName={skill?.name ?? ''}
           skillIcon={skill?.icon ?? '⚡'}
-          questions={builtInSkill.validationQuestions}
+          questions={quizQuestions}
           pathColor={resolvedPathColor.primary}
           onPass={() => {
             validateSkill(skillId);

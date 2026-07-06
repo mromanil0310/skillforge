@@ -33,8 +33,27 @@ describe('VALIDATION_QUESTIONS bank', () => {
     });
   }
 
-  it('merges into ALL_SKILLS (sql-foundations exposes its 10 bank questions)', () => {
-    const sql = ALL_SKILLS.find((s) => s.id === 'sql-foundations');
-    expect(sql?.validationQuestions).toHaveLength(10);
+  // RR-6: the bank is no longer merged eagerly into ALL_SKILLS — it is lazy-loaded via
+  // data/validationCatalog.ts. These tests guard the seams of that split.
+  it('VALIDATED_SKILL_IDS exactly matches the bank keys (lazy-chunk drift guard)', async () => {
+    const { VALIDATED_SKILL_IDS } = await import('../validationSkillIds');
+    expect(new Set(VALIDATED_SKILL_IDS)).toEqual(new Set(Object.keys(VALIDATION_QUESTIONS)));
+  });
+
+  it('loadValidationQuestions resolves the 10 bank questions for sql-foundations', async () => {
+    const { loadValidationQuestions, hasValidationQuestions } = await import('../validationCatalog');
+    const sql = ALL_SKILLS.find((s) => s.id === 'sql-foundations')!;
+    expect(hasValidationQuestions(sql)).toBe(true);
+    const qs = await loadValidationQuestions(sql);
+    expect(qs).toHaveLength(10);
+    // bank wins over the legacy inline questions still authored on the skill
+    expect(qs![0].prompt).toBe(VALIDATION_QUESTIONS['sql-foundations'][0].prompt);
+  });
+
+  it('loadValidationQuestions returns null for a skill with no questions anywhere', async () => {
+    const { loadValidationQuestions, hasValidationQuestions } = await import('../validationCatalog');
+    const bare = { id: 'no-such-skill' };
+    expect(hasValidationQuestions(bare)).toBe(false);
+    expect(await loadValidationQuestions(bare)).toBeNull();
   });
 });

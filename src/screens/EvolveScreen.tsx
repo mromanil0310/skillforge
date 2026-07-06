@@ -31,7 +31,8 @@ import { page, track } from '../utils/analytics';
 import CareerNode from '../components/CareerNode';
 import DemandBadge from '../components/DemandBadge';
 import ValidationChallengeModal from '../components/ValidationChallengeModal';
-import { CustomSkill, Skill, UserSkill } from '../types';
+import { CustomSkill, Skill, UserSkill, ValidationQuestion } from '../types';
+import { hasValidationQuestions, loadValidationQuestions } from '../data/validationCatalog';
 import { pathHasProgress, isTestOutEligible } from '../domain/skillGraph';
 import { uid } from '../utils/uid';
 import { VALIDATION_BONUS_XP, MAX_TESTOUT_ATTEMPTS, TESTOUT_QUESTION_COUNT } from '../domain/progression';
@@ -1134,6 +1135,16 @@ export default function EvolveScreen() {
   const [managingPathId, setManagingPathId] = useState<string | null>(null);
   const [detailSkill, setDetailSkill] = useState<{ skill: Skill; userSkill: UserSkill } | null>(null);
   const [validateTarget, setValidateTarget] = useState<Skill | null>(null);
+  // RR-6: the question bank is a lazy chunk — resolve questions before showing the modal.
+  const [validateQuestions, setValidateQuestions] = useState<ValidationQuestion[] | null>(null);
+  const openQuiz = (target: Skill) => {
+    loadValidationQuestions(target).then((qs) => {
+      if (qs?.length) {
+        setValidateQuestions(qs);
+        setValidateTarget(target);
+      }
+    });
+  };
   // GROW-002: when true the knowledge check is a "test out" (caps attempts, shuffles,
   // grants completion on pass) vs. the post-build validation of an already-completed skill.
   const [validateIsTestOut, setValidateIsTestOut] = useState(false);
@@ -1552,7 +1563,7 @@ export default function EvolveScreen() {
                     isFirst={index === 0}
                     isLast={index === viewInfo.skills.length - 1}
                     onPress={() => handleNodePress(skill.id, userSkill.status)}
-                    onTestKnowledge={() => setValidateTarget(skill as Skill)}
+                    onTestKnowledge={() => openQuiz(skill as Skill)}
                     completedAt={userSkill.completedAt}
                     skillStreak={getSkillStreak(skill.id, outputs)}
                     validated={userSkill.validated ?? false}
@@ -1720,7 +1731,7 @@ export default function EvolveScreen() {
             setDetailSkill(null);
             setValidateAttemptsUsed(userSkills[skill.id]?.testOutAttempts ?? 0);
             setValidateIsTestOut(true);
-            setValidateTarget(target);
+            openQuiz(target);
           };
           const prereqSkills = skill.prerequisites.map(pid => ({
             skill: ALL_SKILLS.find(s => s.id === pid),
@@ -1899,7 +1910,7 @@ export default function EvolveScreen() {
                   <View style={detail.masteredCta}>
                     <Text style={detail.masteredCtaText}>🎓 Knowledge validated. Log more to keep building XP.</Text>
                   </View>
-                ) : skill.validationQuestions?.length ? (
+                ) : hasValidationQuestions(skill) ? (
                   <TouchableOpacity
                     style={[detail.ctaBtn, { backgroundColor: skillPathColor.primary }]}
                     onPress={() => {
@@ -1908,7 +1919,7 @@ export default function EvolveScreen() {
                       const target = skill;
                       setDetailSkill(null);
                       setValidateIsTestOut(false); // post-build validation, not a test-out
-                      setValidateTarget(target);
+                      openQuiz(target as Skill);
                     }}
                     activeOpacity={0.85}
                     accessibilityRole="button"
@@ -1936,12 +1947,12 @@ export default function EvolveScreen() {
           • post-build validation of a COMPLETED skill (validateIsTestOut === false), and
           • GROW-002 "test out" of an available foundational skill (validateIsTestOut === true:
             capped attempts, shuffled questions, completion-on-pass). */}
-      {validateTarget?.validationQuestions?.length ? (
+      {validateTarget && validateQuestions?.length ? (
         <ValidationChallengeModal
           visible={!!validateTarget}
           skillName={validateTarget.name}
           skillIcon={validateTarget.icon ?? '⚡'}
-          questions={validateTarget.validationQuestions}
+          questions={validateQuestions}
           pathColor={(PathColors[validateTarget.pathId] ?? { primary: Colors.primary }).primary}
           xpReward={VALIDATION_BONUS_XP}
           shuffle={validateIsTestOut}
@@ -1965,9 +1976,10 @@ export default function EvolveScreen() {
               );
             }
             setValidateTarget(null);
+            setValidateQuestions(null);
             setValidateIsTestOut(false);
           }}
-          onDismiss={() => { setValidateTarget(null); setValidateIsTestOut(false); }}
+          onDismiss={() => { setValidateTarget(null); setValidateQuestions(null); setValidateIsTestOut(false); }}
         />
       ) : null}
     </SafeAreaView>
