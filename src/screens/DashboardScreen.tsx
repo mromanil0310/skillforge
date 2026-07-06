@@ -14,6 +14,8 @@ import { useNavigation } from '@react-navigation/native';
 import CelebrationOverlay from '../components/CelebrationOverlay';
 import DemandBadge from '../components/DemandBadge';
 import { useAppStore, CAREER_PATHS, ALL_SKILLS, getDecayStage, DecayStage, getBurnoutSignal, BurnoutSignal } from '../store/appStore';
+import { localDateStr, localDaysAgoStr } from '../utils/dates';
+import { effectiveStreak } from '../domain/progression';
 import { PaceMode } from '../types';
 import {
   useThemeColors,
@@ -624,8 +626,10 @@ export default function DashboardScreen() {
 
   // ── Derived flags ─────────────────────────────────────────────────────────
 
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const yesterdayStr = (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); })();
+  const todayStr = localDateStr();          // RR-5: the user's LOCAL calendar day
+  // RR-11: what the UI should show — 0 once the streak is beyond the grace window.
+  const shownStreak = effectiveStreak(user.streak, user.lastActiveDate);
+  const yesterdayStr = localDaysAgoStr(1);
   const streakAtRisk = user.streak > 0 && user.lastActiveDate === yesterdayStr && user.lastActiveDate !== todayStr;
   const weekOutputCount = useMemo(() => {
     const now = new Date();
@@ -665,27 +669,27 @@ export default function DashboardScreen() {
   const hasLoggedToday = user.lastActiveDate === todayStr;
 
   const todayOutputCount = useMemo(
-    () => outputs.filter((o) => o.createdAt.startsWith(todayStr)).length,
+    () => outputs.filter((o) => localDateStr(new Date(o.createdAt)) === todayStr).length,
     [outputs, todayStr],
   );
 
   // 7 dots Mon→Sun for this calendar week
   const weeklyActivityDots = useMemo(() => {
-    // Single time frame: the app keys days by UTC date (todayStr, output.createdAt,
-    // lastActiveDate are all toISOString-based), so derive the week in UTC too.
-    // Previously dayOfWeek used LOCAL getDay() while dateStr was UTC — for PHT users
-    // between 00:00–07:59 local the frames disagree and the "today" dot rendered
-    // under the wrong weekday label.
+    // RR-5: one time frame everywhere — the user's LOCAL calendar. Day keys, "today",
+    // and each output's day all come from localDateStr, so the dot under a weekday
+    // label always matches the user's wall clock (previously UTC: the day flipped at
+    // 08:00 for PH users and the "today" dot could sit under the wrong label).
     const now = new Date();
-    const dayOfWeek = now.getUTCDay(); // 0 = Sun (UTC, matching todayStr)
+    const dayOfWeek = now.getDay(); // 0 = Sun (local)
     const mondayOffset = (dayOfWeek + 6) % 7; // days since Monday
+    const outputDays = new Set(outputs.map((o) => localDateStr(new Date(o.createdAt))));
     return (['M', 'T', 'W', 'T', 'F', 'S', 'S'] as const).map((label, i) => {
       const d = new Date(now);
-      d.setUTCDate(now.getUTCDate() - mondayOffset + i);
-      const dateStr = d.toISOString().slice(0, 10);
+      d.setDate(now.getDate() - mondayOffset + i);
+      const dateStr = localDateStr(d);
       const isToday = dateStr === todayStr;
       const isFuture = dateStr > todayStr;
-      const logged = !isFuture && outputs.some((o) => o.createdAt.startsWith(dateStr));
+      const logged = !isFuture && outputDays.has(dateStr);
       return { label, isToday, isFuture, logged } as const;
     });
   }, [outputs, todayStr]);
@@ -805,7 +809,7 @@ export default function DashboardScreen() {
               <View style={styles.streakAtRiskCol}>
                 <View style={styles.streakChip}>
                   <Text style={styles.streakFire}>🔥</Text>
-                  <Text style={styles.streakCount}>{hasStarted ? user.streak : 0}</Text>
+                  <Text style={styles.streakCount}>{shownStreak}</Text>
                 </View>
                 {(user.streakFreezes ?? 0) > 0 && (
                   <View style={styles.freezeBalanceRow}>
@@ -1018,7 +1022,7 @@ export default function DashboardScreen() {
               <View style={styles.statSep} />
               <View style={styles.statCell}>
                 <Text style={[styles.statVal, streakAtRisk && { color: Colors.gold }]}>
-                  {user.streak}
+                  {shownStreak}
                 </Text>
                 <Text style={styles.statLbl}>DAY STREAK</Text>
               </View>

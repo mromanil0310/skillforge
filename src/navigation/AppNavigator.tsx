@@ -9,6 +9,8 @@ import { useAppStore } from '../store/appStore';
 // ARCH-001: auth session listener
 import { onAuthStateChange, isSupabaseEnabled } from '../lib/auth';
 import { captureError } from '../utils/errorMonitor';
+import { localDateStr } from '../utils/dates';
+import { effectiveStreak } from '../domain/progression';
 import type { UnlockedAchievementInfo } from '../types';
 
 import OnboardingScreen from '../screens/OnboardingScreen';
@@ -212,9 +214,10 @@ function LogTabIcon({ focused, isStreakAtRisk }: { focused: boolean; isStreakAtR
 function MainTabs() {
   const Colors = useThemeColors();
   const user = useAppStore((s) => s.user);
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localDateStr(); // RR-5: local calendar day
   const hasLoggedToday = user?.lastActiveDate === todayStr;
-  const isStreakAtRisk = !hasLoggedToday && (user?.streak ?? 0) > 0;
+  // RR-11: don't pulse "save your streak" for a streak that is already dead.
+  const isStreakAtRisk = !hasLoggedToday && effectiveStreak(user?.streak ?? 0, user?.lastActiveDate) > 0;
 
   return (
     <Tab.Navigator

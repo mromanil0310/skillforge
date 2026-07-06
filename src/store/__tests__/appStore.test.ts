@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { useAppStore } from '../appStore';
 import type { ExperienceLevel } from '../../types';
 import { ONBOARDING_XP_GRANT } from '../../domain/progression';
+import { localDaysAgoStr } from '../../utils/dates';
 
 // Integration tests over the core store actions. These exercise the real Zustand
 // store (no mocks) — the behavioral safety net required before slicing actions
@@ -210,7 +211,10 @@ describe('logOutput', () => {
   it('increments the streak on a consecutive day', () => {
     reset();
     onboard();
-    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    // RR-5: day keys are LOCAL-calendar — use the same helper production uses, so this
+    // test can't drift a frame (the old UTC computation went flaky between 00:00–07:59
+    // in any UTC+east timezone).
+    const yesterday = localDaysAgoStr(1);
     store.setState({ user: { ...get().user!, lastActiveDate: yesterday, streak: 3, longestStreak: 3 } });
     const r = log();
     expect(r.newStreak).toBe(4);

@@ -16,6 +16,7 @@ import {
   Image,
 } from 'react-native';
 import { useAppStore, CAREER_PATHS, ALL_SKILLS, ALL_ACHIEVEMENTS, getEvidenceTier, OUTCOME_XP, getCareerMastery, CAREER_MASTERY_LADDER, CAREER_MASTERY_META, getBurnoutSignal } from '../store/appStore';
+import { localDateStr } from '../utils/dates';
 import {
   useThemeColors,
   ColorsType,
@@ -159,7 +160,7 @@ export default function ProfileScreen() {
   const [outcomeTitle, setOutcomeTitle] = useState('');
   const [outcomeCompany, setOutcomeCompany] = useState('');
   const [outcomeNote, setOutcomeNote] = useState('');
-  const [outcomeDate, setOutcomeDate] = useState(new Date().toISOString().slice(0, 10));
+  const [outcomeDate, setOutcomeDate] = useState(localDateStr());
   const [outcomeToDelete, setOutcomeToDelete] = useState<CareerOutcome | null>(null);
   const { showToast } = useToast();
   const avatarAnim = useRef(new Animated.Value(1)).current;
@@ -259,7 +260,7 @@ export default function ProfileScreen() {
     setOutcomeTitle('');
     setOutcomeCompany('');
     setOutcomeNote('');
-    setOutcomeDate(new Date().toISOString().slice(0, 10));
+    setOutcomeDate(localDateStr());
     setOutcomeType('interview');
   };
 
