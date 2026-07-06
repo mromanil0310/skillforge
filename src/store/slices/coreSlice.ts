@@ -12,6 +12,7 @@ import type {
 import { getLevelFromXP, Colors } from '../../utils/theme';
 import { track, identify } from '../../utils/analytics';
 import { uid } from '../../utils/uid';
+import { localDateStr, localDaysAgoStr } from '../../utils/dates';
 import { CAREER_PATHS } from '../../data/careerPaths';
 import { ALL_SKILLS } from '../../data/skills';
 import { ALL_ACHIEVEMENTS } from '../../data/achievements';
@@ -38,7 +39,7 @@ export const createCoreSlice = (set: Set, get: Get): Pick<AppState, 'completeOnb
 
     // UX-029: grant a small "journey started" XP so new users never land on 0.
     // Pre-credited skill XP is added below after the experience-level block.
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = localDateStr(); // RR-5: local calendar day, not UTC
 
     const user: User = {
       id: userId,
@@ -259,7 +260,7 @@ export const createCoreSlice = (set: Set, get: Get): Pick<AppState, 'completeOnb
 
     // ── Streak calculation ────────────────────────────────────────────────────
     // Compare today's date (local) against the last date the user logged anything.
-    const todayStr = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+    const todayStr = localDateStr(); // "YYYY-MM-DD" in the USER'S timezone (RR-5)
     const lastActive = state.user.lastActiveDate;
     let newStreak = state.user.streak;
 
@@ -271,13 +272,8 @@ export const createCoreSlice = (set: Set, get: Get): Pick<AppState, 'completeOnb
       newStreak = state.user.streak;
     } else {
       // Check consecutive / grace-period / broken
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().slice(0, 10);
-
-      const twoDaysAgo = new Date();
-      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-      const twoDaysAgoStr = twoDaysAgo.toISOString().slice(0, 10);
+      const yesterdayStr = localDaysAgoStr(1);
+      const twoDaysAgoStr = localDaysAgoStr(2);
 
       if (lastActive === yesterdayStr) {
         newStreak = state.user.streak + 1; // consecutive day
@@ -730,7 +726,7 @@ export const createCoreSlice = (set: Set, get: Get): Pick<AppState, 'completeOnb
   useStreakFreeze: () => {
     const state = get();
     if (!state.user || (state.user.streakFreezes ?? 0) <= 0) return;
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = localDateStr(); // RR-5: local calendar day
     const updatedUser = {
       ...state.user,
       streakFreezes: (state.user.streakFreezes ?? 1) - 1,

@@ -34,6 +34,7 @@ import ValidationChallengeModal from '../components/ValidationChallengeModal';
 import { CustomSkill, Skill, UserSkill, ValidationQuestion } from '../types';
 import { hasValidationQuestions, loadValidationQuestions } from '../data/validationCatalog';
 import { pathHasProgress, isTestOutEligible } from '../domain/skillGraph';
+import { localDateStr } from '../utils/dates';
 import { uid } from '../utils/uid';
 import { VALIDATION_BONUS_XP, MAX_TESTOUT_ATTEMPTS, TESTOUT_QUESTION_COUNT } from '../domain/progression';
 import { getPathDemandLabel, DEMAND_SOURCE_LABEL } from '../data/marketDemand';
@@ -42,15 +43,16 @@ const PALETTE = ['#7C3AED', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#EC4899
 const ICON_OPTIONS = ['🎯', '📚', '🎨', '🏋️', '🎵', '🗣️', '✍️', '🔬', '🌍', '💼', '🍳', '📸', '🎭', '⚽', '🧘', '💡'];
 
 function getSkillStreak(skillId: string, outputs: Array<{ skillId: string; createdAt: string }>): number {
+  // RR-5: both sides of the comparison in the user's LOCAL calendar frame.
   const skillDates = new Set(
-    outputs.filter(o => o.skillId === skillId).map(o => o.createdAt.slice(0, 10))
+    outputs.filter(o => o.skillId === skillId).map(o => localDateStr(new Date(o.createdAt)))
   );
   let streak = 0;
   const today = new Date();
   for (let i = 0; i < 60; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    if (skillDates.has(d.toISOString().slice(0, 10))) {
+    if (skillDates.has(localDateStr(d))) {
       streak++;
     } else {
       break;

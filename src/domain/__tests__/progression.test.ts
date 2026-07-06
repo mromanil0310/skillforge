@@ -197,3 +197,24 @@ describe('calculateOutputXP', () => {
     });
   });
 });
+
+// ─── effectiveStreak (RR-11: display-time streak decay) ───────────────────────────
+import { effectiveStreak } from '../progression';
+import { localDateStr, localDaysAgoStr } from '../../utils/dates';
+
+describe('effectiveStreak', () => {
+  const now = new Date(2026, 6, 6, 12, 0); // fixed local noon
+  it('is alive when last active today / yesterday / two days ago (grace)', () => {
+    expect(effectiveStreak(5, localDateStr(now), now)).toBe(5);
+    expect(effectiveStreak(5, localDaysAgoStr(1, now), now)).toBe(5);
+    expect(effectiveStreak(5, localDaysAgoStr(2, now), now)).toBe(5);
+  });
+  it('reads 0 once beyond the grace window (matches logOutput break semantics)', () => {
+    expect(effectiveStreak(5, localDaysAgoStr(3, now), now)).toBe(0);
+    expect(effectiveStreak(12, localDaysAgoStr(30, now), now)).toBe(0);
+  });
+  it('reads 0 with no streak or no lastActiveDate', () => {
+    expect(effectiveStreak(0, localDateStr(now), now)).toBe(0);
+    expect(effectiveStreak(4, undefined, now)).toBe(0);
+  });
+});

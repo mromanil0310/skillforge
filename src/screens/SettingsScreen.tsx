@@ -15,6 +15,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useAppStore } from '../store/appStore';
 import { isValidBackup } from '../store/persistence';
+import { localDateStr } from '../utils/dates';
 import { useThemeColors, ColorsType, Spacing, Radius, FontSize } from '../utils/theme';
 import { useToast } from '../components/Toast';
 import { page, getConsentStatus, setConsent } from '../utils/analytics';
@@ -42,7 +43,7 @@ function exportProgress(): boolean {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `maglakbai-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `maglakbai-backup-${localDateStr()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

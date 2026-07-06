@@ -8,6 +8,7 @@
 // that needs theme colors (MASTERY_TIERS, CAREER_MASTERY_META) stays in appStore.ts.
 
 import type { Output, UserSkill, EvidenceTier, PaceMode, OutcomeType, OutputType } from '../types';
+import { localDateStr, localDaysAgoStr } from '../utils/dates'; // pure, no deps
 
 // ─── Motivation Decay Model ───────────────────────────────────────────────────
 // Maps days since last output → 5 behavioral stages.
@@ -139,6 +140,26 @@ export function getCareerMastery(
 // UX-029: XP granted on onboarding completion — gives every new user a non-zero
 // starting state ("journey started ⚡") so they land on 25 XP / 🔥1 instead of
 // four zeros, regardless of whether they logged a first output.
+
+// Display-time streak decay (RR-11). A streak more than 2 days stale is already
+// broken — logOutput will reset it to 1 on the next log — but the stale value stays
+// persisted until then. Surfaces must not show a live flame for a dormant account
+// (and conversely a freshly-onboarded user with lastActiveDate=today has a real,
+// live streak of 1 per UX-029). Same grace window as logOutput: today, yesterday,
+// or two days ago (grace) count as alive.
+export function effectiveStreak(
+  streak: number,
+  lastActiveDate: string | undefined,
+  now: Date = new Date(),
+): number {
+  if (!streak || !lastActiveDate) return 0;
+  const alive =
+    lastActiveDate === localDateStr(now) ||
+    lastActiveDate === localDaysAgoStr(1, now) ||
+    lastActiveDate === localDaysAgoStr(2, now);
+  return alive ? streak : 0;
+}
+
 export const ONBOARDING_XP_GRANT = 25;
 
 // Bonus granted when a user passes a skill's knowledge check (the "Validated" tier).
