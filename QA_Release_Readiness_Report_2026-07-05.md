@@ -30,8 +30,8 @@
 | # | Sev | Item | Why not fixed now |
 |---|---|---|---|
 | RR-5 | **P2** | **Day-keying is UTC app-wide** → the "day" (streaks, dots, hasLoggedToday) flips at 08:00 PHT, not midnight, for the target market | Consistent (no corruption) but wrong mental model. Fixing means migrating `lastActiveDate`/date-keyed semantics — needs a persistence migration + product sign-off, not a hot fix. |
-| RR-6 | **P2** | **Bundle: 308 KB gzip app chunk** (1.1 MB raw; ~533 KB gzip first load) — the 950-question validation bank ships eagerly | Route/data-level code-splitting (lazy-load `validationQuestions`) is the right fix; deliberate change, not a pre-release churn. |
-| RR-7 | P2 | No service worker → installed PWA white-screens on offline **cold start** (in-session offline works via localStorage) | Known PERF-002; Workbox/vite-plugin-pwa scoped work. Offline-first *state* is genuinely delivered; offline *boot* is not. |
+| RR-6 | **P2** | ~~Bundle: 308 KB gzip app chunk~~ **✅ Resolved (PR #4):** bank split into a lazy chunk — app chunk 191 KB gzip (−38%), first load ~416 KB gzip | Lazy `validationCatalog` + drift-guarded ID set; verified live (chunk fetched on first quiz open). |
+| RR-7 | P2 | ~~No service worker~~ **✅ Resolved:** vite-plugin-pwa (autoUpdate) precaches the shell, fonts, and the lazy quiz bank; `sw.js` no-cache header added for Netlify | Verified on the dist build: SW activated, 23 entries precached, shell cache-servable. Owner: one manual airplane-mode test after deploy recommended. |
 | RR-8 | P3 | Transient `Unexpected text node: "."` fires once on Feed mount; not present in settled DOM after full scroll; no visible defect | Time-boxed; cosmetic. |
 | RR-9 | P3 | Pre-fix users could carry duplicate-id posts (only plausible via scripted same-ms writes; observed only in my test profile) | A hydration dedupe is possible but the real-user probability is ~0 (UI can't double-submit in 1 ms). |
 | RR-10 | P3 | Stray duplicate file `QA_Developer_Report_2026-06-17 2.md` (untracked Finder copy) | Not mine to delete without owner confirmation. |

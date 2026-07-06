@@ -47,6 +47,13 @@
     Cache-Control = "public, max-age=31536000, immutable"
 
 # ─── PWA assets — short cache so updates propagate quickly ───────────────────
+# The service worker itself must never be cached long-term: autoUpdate depends on
+# the browser refetching sw.js to discover new deploys.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 [[headers]]
   for = "/manifest.json"
   [headers.values]
