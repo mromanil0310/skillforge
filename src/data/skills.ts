@@ -1,6 +1,5 @@
 // MaglakbAI skill node catalog — pure static data extracted from appStore.ts (ARCH-002).
 import type { Skill } from '../types';
-import { VALIDATION_QUESTIONS } from './validationQuestions';
 
 const RAW_SKILLS: Skill[] = [
   // ── Data Architect ──
@@ -1975,11 +1974,8 @@ const RAW_SKILLS: Skill[] = [
   },
 ];
 
-// Attach the 10-question validation bank (src/data/validationQuestions.ts) by
-// skill id. A skill present in the bank uses its bank questions; otherwise it
-// keeps any inline validationQuestions defined above (legacy 3-question sets).
-export const ALL_SKILLS: Skill[] = RAW_SKILLS.map((skill) =>
-  VALIDATION_QUESTIONS[skill.id]
-    ? { ...skill, validationQuestions: VALIDATION_QUESTIONS[skill.id] }
-    : skill
-);
+// RR-6 (bundle): the 10-question bank is NO LONGER merged eagerly — it lives in its
+// own lazy chunk. Use data/validationCatalog.ts: hasValidationQuestions(skill) for
+// render-time gating and loadValidationQuestions(skill) when opening a quiz (bank
+// questions win over any legacy inline validationQuestions kept above).
+export const ALL_SKILLS: Skill[] = RAW_SKILLS;

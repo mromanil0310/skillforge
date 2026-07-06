@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Skill, UserSkill } from '../types';
 import { Colors, ColorsType, useThemeColors, Spacing, Radius, FontSize } from '../utils/theme';
+import { hasValidationQuestions } from '../data/validationCatalog';
 
 interface CareerNodeProps {
   skill: Skill;
@@ -255,7 +256,7 @@ export default function CareerNode({
 
           {/* Validation nudge for unvalidated completed skills (when questions exist).
               Tapping it launches the quiz directly (separate from the node's onPress). */}
-          {isCompleted && !validated && (skill as any).validationQuestions?.length > 0 && (
+          {isCompleted && !validated && hasValidationQuestions(skill as any) && (
             onTestKnowledge ? (
               // Pointer-only shortcut, deliberately NOT a button: the whole card is
               // already a <button> on RN-web, and ANY accessibilityRole="button" child

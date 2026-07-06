@@ -7,6 +7,7 @@ import type { UserSkill, CareerPathId, ExperienceLevel } from '../types';
 import { CAREER_PATHS } from '../data/careerPaths';
 import { ALL_SKILLS } from '../data/skills';
 import { FOUNDATIONAL_WINDOW, MAX_TESTOUT_ATTEMPTS } from './progression';
+import { hasValidationQuestions } from '../data/validationCatalog';
 
 export function initUserSkills(pathId: CareerPathId): Record<string, UserSkill> {
   const path = CAREER_PATHS.find((p) => p.id === pathId)!;
@@ -41,7 +42,8 @@ export function isTestOutEligible(
   if (!us || us.status !== 'available') return false;
   if ((us.testOutAttempts ?? 0) >= MAX_TESTOUT_ATTEMPTS) return false;
   const skill = ALL_SKILLS.find((s) => s.id === skillId);
-  if (!skill?.validationQuestions?.length) return false;
+  // Presence check only — the questions themselves are lazy-loaded (RR-6).
+  if (!hasValidationQuestions(skill)) return false;
   return true;
 }
 
