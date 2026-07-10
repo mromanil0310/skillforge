@@ -36,7 +36,7 @@ import { hasValidationQuestions, loadValidationQuestions } from '../data/validat
 import { pathHasProgress, isTestOutEligible } from '../domain/skillGraph';
 import { localDateStr } from '../utils/dates';
 import { uid } from '../utils/uid';
-import { VALIDATION_BONUS_XP, MAX_TESTOUT_ATTEMPTS, TESTOUT_QUESTION_COUNT } from '../domain/progression';
+import { VALIDATION_BONUS_XP, MAX_TESTOUT_ATTEMPTS, TESTOUT_QUESTION_COUNT, CUSTOM_SKILL_COMPLETION_XP } from '../domain/progression';
 import { getPathDemandLabel, DEMAND_SOURCE_LABEL } from '../data/marketDemand';
 
 const PALETTE = ['#7C3AED', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#8B5CF6', '#F97316'];
@@ -1207,7 +1207,7 @@ export default function EvolveScreen() {
       ? ALL_SKILLS.filter(s => s.pathId === pathId).sort((a, b) => a.order - b.order)
       : (custom?.skills ?? []).map((s, i) => ({
           id: s.id, pathId: pathId as import('../types').CareerPathId, name: s.name, description: s.description, icon: s.icon || '⭐',
-          xpReward: 100, rarity: 'common' as const, requiredOutputs: 1,
+          xpReward: CUSTOM_SKILL_COMPLETION_XP, rarity: 'common' as const, requiredOutputs: 1,
           prerequisites: i > 0 ? [custom!.skills[i - 1].id] : [], order: i + 1,
         }));
     const completed = skills.filter(s => userSkills[s.id]?.status === 'completed').length;
@@ -1259,7 +1259,7 @@ export default function EvolveScreen() {
       name: customSkill!.name,
       description: customSkill!.description ?? '',
       icon: customSkill!.icon ?? '⭐',
-      xpReward: 100, rarity: 'common' as const,
+      xpReward: CUSTOM_SKILL_COMPLETION_XP, rarity: 'common' as const,
       requiredOutputs: 1, prerequisites: [], order: 0,
     };
     const resolvedUserSkill: UserSkill = userSkills[skillId] ?? {
