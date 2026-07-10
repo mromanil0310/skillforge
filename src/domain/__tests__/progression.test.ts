@@ -218,3 +218,17 @@ describe('effectiveStreak', () => {
     expect(effectiveStreak(4, undefined, now)).toBe(0);
   });
 });
+
+// ─── dayLabel (singular/plural day count for share copy) ──────────────────────────
+import { dayLabel } from '../progression';
+
+describe('dayLabel', () => {
+  it('uses the singular only for exactly 1', () => {
+    expect(dayLabel(1)).toBe('1 day');
+  });
+  it('uses the plural for 0 and for counts above 1', () => {
+    expect(dayLabel(0)).toBe('0 days');
+    expect(dayLabel(2)).toBe('2 days');
+    expect(dayLabel(30)).toBe('30 days');
+  });
+});

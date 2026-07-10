@@ -160,6 +160,10 @@ export function effectiveStreak(
   return alive ? streak : 0;
 }
 
+// Human day count with correct singular/plural — "1 day", "0 days", "5 days".
+// Used in share copy and nudges so a streak of 1 never reads "1 days".
+export const dayLabel = (count: number): string => `${count} ${count === 1 ? 'day' : 'days'}`;
+
 export const ONBOARDING_XP_GRANT = 25;
 
 // Bonus granted when a user passes a skill's knowledge check (the "Validated" tier).

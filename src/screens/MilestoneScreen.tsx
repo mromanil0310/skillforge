@@ -18,6 +18,7 @@ import { track } from '../utils/analytics';
 import { CustomPath, CustomSkill, ValidationQuestion } from '../types';
 import ValidationChallengeModal from '../components/ValidationChallengeModal';
 import { loadValidationQuestions } from '../data/validationCatalog';
+import { dayLabel } from '../domain/progression';
 
 type MilestoneRouteProps = RouteProp<RootStackParamList, 'MilestoneDetail'>;
 
@@ -313,7 +314,7 @@ export default function MilestoneScreen() {
 
   const pathName = path?.name ?? 'Custom';
   const generatedPost = skill && user
-    ? `⚡ Milestone Unlocked: ${skill.name}\n\nCompleted ${skill.name} on my ${pathName} evolution path.\n\n${skill.description}\n\nCurrent Evolution: ${pathName} Path\nStreak: ${user.streak} days 🔥\n\n#${pathName.replace(/\s/g, '')} #MaglakbAI #CareerGrowth #TechEvolution`
+    ? `⚡ Milestone Unlocked: ${skill.name}\n\nCompleted ${skill.name} on my ${pathName} evolution path.\n\n${skill.description}\n\nCurrent Evolution: ${pathName} Path\nStreak: ${dayLabel(user.streak)} 🔥\n\n#${pathName.replace(/\s/g, '')} #MaglakbAI #CareerGrowth #TechEvolution`
     : '';
 
   const handleShare = async () => {
