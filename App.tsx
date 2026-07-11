@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ToastProvider } from './src/components/Toast';
 import ConsentBanner from './src/components/ConsentBanner';
+import LogReminder from './src/components/LogReminder';
 import { sessionStarted, track, trackRetention } from './src/utils/analytics';
 import { captureError, installGlobalErrorHandlers } from './src/utils/errorMonitor';
 import { ThemeContext } from './src/utils/theme';
@@ -100,6 +101,7 @@ export default function App() {
           <ToastProvider>
             <AppNavigator />
             {hasOnboarded && <ConsentBanner />}
+            {hasOnboarded && <LogReminder />}
           </ToastProvider>
         </ErrorBoundary>
       </SafeAreaProvider>

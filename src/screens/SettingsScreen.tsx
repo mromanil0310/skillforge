@@ -21,6 +21,7 @@ import { useToast } from '../components/Toast';
 import { page, getConsentStatus, setConsent } from '../utils/analytics';
 import PrivacyPolicyModal, { PRIVACY_CONTACT } from '../components/PrivacyPolicyModal';
 import TermsOfServiceModal from '../components/TermsOfServiceModal';
+import { vibrationSupported } from '../components/LogReminder';
 // ARCH-001: Supabase auth
 import { sendMagicLink, signOut, deleteAccount, isSupabaseEnabled } from '../lib/auth';
 
@@ -32,6 +33,21 @@ const FONT_SCALE_LABELS = ['Small', 'Default', 'Large', 'X-Large'];
 const fontScaleIndex = (scale: number): number => {
   const i = FONT_SCALE_STEPS.findIndex((s) => Math.abs(s - scale) < 0.001);
   return i === -1 ? 1 : i;
+};
+
+// Reminder time helpers — store as 'HH:MM', step in 30-min increments (wraps at
+// midnight), and display in friendly 12-hour form.
+const REMINDER_STEP_MIN = 30;
+const stepReminderTime = (time: string, deltaMin: number): string => {
+  const [h, m] = time.split(':').map(Number);
+  const total = (((h * 60 + m + deltaMin) % 1440) + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+};
+const formatReminderTime = (time: string): string => {
+  const [h, m] = time.split(':').map(Number);
+  const period = h < 12 ? 'AM' : 'PM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${period}`;
 };
 
 // Web-only: download the on-device save as a JSON backup file.
@@ -267,6 +283,12 @@ export default function SettingsScreen() {
   const fontScale = useAppStore((s) => s.fontScale);
   const setFontScale = useAppStore((s) => s.setFontScale);
   const fsIdx = fontScaleIndex(fontScale);
+  const reminderEnabled = useAppStore((s) => s.reminderEnabled);
+  const reminderTime = useAppStore((s) => s.reminderTime);
+  const reminderVibrate = useAppStore((s) => s.reminderVibrate);
+  const setReminderEnabled = useAppStore((s) => s.setReminderEnabled);
+  const setReminderTime = useAppStore((s) => s.setReminderTime);
+  const setReminderVibrate = useAppStore((s) => s.setReminderVibrate);
   const Colors = useThemeColors();
   const styles = React.useMemo(() => makeStyles(Colors), [Colors]);
   const { showToast } = useToast();
@@ -518,6 +540,82 @@ export default function SettingsScreen() {
             badge="Phase 3"
             disabled
           />
+        </View>
+
+        {/* ── Reminders ─────────────────────────────────────────────── */}
+        <SectionHeader title="REMINDERS" />
+        <View style={styles.sectionCard}>
+          {/* Daily log reminder on/off */}
+          <View style={styles.row}>
+            <View style={styles.rowLeft}>
+              <Text style={styles.rowIcon}>⏰</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowLabel}>Daily Log Reminder</Text>
+                <Text style={styles.reminderSub}>An alarm to log an output — fires while the app is open</Text>
+              </View>
+            </View>
+            <Switch
+              value={reminderEnabled}
+              onValueChange={setReminderEnabled}
+              trackColor={{ false: Colors.cardAlt, true: Colors.primary }}
+              thumbColor={Colors.white}
+              accessibilityLabel="Toggle daily log reminder"
+            />
+          </View>
+
+          {reminderEnabled && (
+            <>
+              <View style={styles.rowDivider} />
+              {/* Reminder time — − / + stepper, 30-minute increments */}
+              <View style={styles.row}>
+                <View style={styles.rowLeft}>
+                  <Text style={styles.rowIcon}>🕐</Text>
+                  <Text style={styles.rowLabel}>Remind me at</Text>
+                </View>
+                <View style={styles.fontStepper}>
+                  <TouchableOpacity
+                    style={styles.fontStepBtn}
+                    onPress={() => setReminderTime(stepReminderTime(reminderTime, -REMINDER_STEP_MIN))}
+                    accessibilityRole="button"
+                    accessibilityLabel="Earlier reminder time"
+                  >
+                    <Text style={styles.fontStepMinus}>−</Text>
+                  </TouchableOpacity>
+                  <Text style={[styles.fontScaleLabel, styles.reminderTimeLabel]}>{formatReminderTime(reminderTime)}</Text>
+                  <TouchableOpacity
+                    style={styles.fontStepBtn}
+                    onPress={() => setReminderTime(stepReminderTime(reminderTime, REMINDER_STEP_MIN))}
+                    accessibilityRole="button"
+                    accessibilityLabel="Later reminder time"
+                  >
+                    <Text style={styles.fontStepPlus}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.rowDivider} />
+              {/* Vibrate on reminder */}
+              <View style={styles.row}>
+                <View style={styles.rowLeft}>
+                  <Text style={styles.rowIcon}>📳</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.rowLabel}>Vibrate</Text>
+                    <Text style={styles.reminderSub}>
+                      {vibrationSupported() ? 'Buzz the device when the reminder fires' : 'This device / browser can’t vibrate'}
+                    </Text>
+                  </View>
+                </View>
+                <Switch
+                  value={reminderVibrate && vibrationSupported()}
+                  onValueChange={setReminderVibrate}
+                  disabled={!vibrationSupported()}
+                  trackColor={{ false: Colors.cardAlt, true: Colors.primary }}
+                  thumbColor={Colors.white}
+                  accessibilityLabel="Toggle vibration on reminder"
+                />
+              </View>
+            </>
+          )}
         </View>
 
         {/* ── App info ─────────────────────────────────────────────── */}
@@ -871,6 +969,17 @@ const makeStyles = (Colors: ColorsType) => StyleSheet.create({
   fontStepPlus: {
     fontSize: 20,
     fontWeight: '800',
+    color: Colors.primaryLight,
+  },
+
+  // ── Reminders
+  reminderSub: {
+    fontSize: FontSize.xs,
+    color: Colors.textMuted,
+    marginTop: 2,
+  },
+  reminderTimeLabel: {
+    minWidth: 78,
     color: Colors.primaryLight,
   },
 

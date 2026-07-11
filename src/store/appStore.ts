@@ -134,6 +134,10 @@ export interface AppState {
   savedPostIds: string[]; // post IDs bookmarked by the user
   colorScheme: 'dark' | 'light'; // persisted theme preference
   fontScale: number; // persisted app-wide text-size multiplier (0.9–1.2; 1 = default)
+  reminderEnabled: boolean; // in-app "log your output" daily reminder on/off
+  reminderTime: string; // 'HH:MM' local wall-clock the reminder fires at
+  reminderVibrate: boolean; // buzz the device when the reminder fires (if the browser supports it)
+  reminderLastShownDate: string | null; // local date the reminder last fired — once-a-day guard
   careerOutcomes: CareerOutcome[]; // self-reported real-world career wins
   marketDemand: Record<string, MarketDemand>; // demand signals keyed by skillId — loaded on first EvolveScreen mount
   submittedSignalSkillIds: string[]; // skillIds the user has already contributed a signal for (no re-prompting)
@@ -188,6 +192,10 @@ export interface AppState {
   shuffleFeed: () => void; // HIGH-005: reorder seed posts for pull-to-refresh feedback
   setColorScheme: (scheme: 'dark' | 'light') => void;
   setFontScale: (scale: number) => void;
+  setReminderEnabled: (enabled: boolean) => void;
+  setReminderTime: (time: string) => void;
+  setReminderVibrate: (enabled: boolean) => void;
+  markReminderShown: (dateStr: string) => void;
   // ARCH-001: auth actions
   setSupabaseSession: (userId: string | null, email: string | null) => void;
   setSupabaseSyncing: (syncing: boolean) => void;
@@ -286,6 +294,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   savedPostIds: saved?.savedPostIds ?? [],
   colorScheme: saved?.colorScheme ?? 'dark',
   fontScale: saved?.fontScale ?? 1,
+  reminderEnabled: saved?.reminderEnabled ?? false,
+  reminderTime: saved?.reminderTime ?? '19:00',
+  reminderVibrate: saved?.reminderVibrate ?? true,
+  reminderLastShownDate: saved?.reminderLastShownDate ?? null,
   careerOutcomes: saved?.careerOutcomes ?? [],
   marketDemand: { ...MARKET_DEMAND_MAP }, // seeded from curated data; community signals merged on load
   submittedSignalSkillIds: saved?.submittedSignalSkillIds ?? [],
