@@ -33,7 +33,7 @@ A production build emits hashed assets into `dist/`:
 ### First-time setup (one time)
 
 1. Go to **app.netlify.com** → **Add new site** → **Import an existing project**
-2. Connect to GitHub → pick **`mromanil0310/app-maglakbai`**
+2. Connect to GitHub → pick **`mromanil0310/maglakbai-skill-tracker`**
 3. Netlify auto-detects `netlify.toml` — build command and publish directory are pre-filled
 4. Add environment variables under **Site configuration → Environment variables**:
 
@@ -74,10 +74,10 @@ npm run build
 
 ## User guide page — GitHub Pages
 
-The how-to guide (`docs/USER_GUIDE.html`, also copied to `public/USER_GUIDE.html`) is published via GitHub Pages from the repo `mromanil0310/app-maglakbai`:
+The how-to guide (`docs/USER_GUIDE.html`, also copied to `public/USER_GUIDE.html`) is published via GitHub Pages from the repo `mromanil0310/maglakbai-skill-tracker`:
 
 - **Repo → Settings → Pages → Deploy from a branch → `main` / `/docs`.**
-- Live at: `https://mromanil0310.github.io/app-maglakbai/USER_GUIDE.html`
+- Live at: `https://mromanil0310.github.io/maglakbai-skill-tracker/USER_GUIDE.html`
 
 `docs/USER_GUIDE.html` is the source of truth; `public/USER_GUIDE.html` is the copy that ships inside the app build. Keep them in sync when editing.
 

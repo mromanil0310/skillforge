@@ -8,13 +8,13 @@
 MaglakbAI is a skill gamification app for anyone who wants to grow. You log real proof-of-work outputs — projects, scripts, books, certifications, diagrams, GitHub repos — to earn XP, unlock milestone achievements, and share your progress. XP comes from **building, not watching.**
 
 **📱 Live app:** https://fascinating-kitten-b6a79d.netlify.app
-**📖 User guide:** https://mromanil0310.github.io/app-maglakbai/USER_GUIDE.html
+**📖 User guide:** https://mromanil0310.github.io/maglakbai-skill-tracker/USER_GUIDE.html
 
 ---
 
 ## Status
 
-[![CI](https://github.com/mromanil0310/app-maglakbai/actions/workflows/ci.yml/badge.svg)](https://github.com/mromanil0310/app-maglakbai/actions/workflows/ci.yml)
+[![CI](https://github.com/mromanil0310/maglakbai-skill-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/mromanil0310/maglakbai-skill-tracker/actions/workflows/ci.yml)
 
 🚀 **Live web / PWA pilot.** Runs in the browser and installs as a PWA. **Cloud backup** available via Settings → Cloud Backup (Magic Link sign-in — no password needed). Progress syncs across devices once signed in.
 
@@ -44,7 +44,7 @@ The differentiator is **proof-based progression**: you don't earn XP for consumi
 
 **Who it's for:** students proving they're job-ready, professionals documenting growth beyond the job title, career shifters who need receipts for their new skills, and anyone tired of certificates that say "watched" instead of "built."
 
-👉 Try the pilot: **https://fascinating-kitten-b6a79d.netlify.app** · Full walkthrough: **[User Guide](https://mromanil0310.github.io/app-maglakbai/USER_GUIDE.html)**
+👉 Try the pilot: **https://fascinating-kitten-b6a79d.netlify.app** · Full walkthrough: **[User Guide](https://mromanil0310.github.io/maglakbai-skill-tracker/USER_GUIDE.html)**
 
 ## Features
 
