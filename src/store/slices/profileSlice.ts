@@ -21,7 +21,7 @@ import { initUserSkills, unlockDependentSkills, checkAchievements } from '../../
 type Set = StoreApi<AppState>['setState'];
 type Get = StoreApi<AppState>['getState'];
 
-export const createProfileSlice = (set: Set, get: Get): Pick<AppState, 'updateAvatar' | 'updateAvatarImage' | 'updateBio' | 'updateName' | 'updateTargetRole' | 'setComebackGoal' | 'setPaceMode' | 'updateEmail' | 'setColorScheme' | 'setFontScale'> => ({
+export const createProfileSlice = (set: Set, get: Get): Pick<AppState, 'updateAvatar' | 'updateAvatarImage' | 'updateBio' | 'updateName' | 'updateTargetRole' | 'setComebackGoal' | 'setPaceMode' | 'updateEmail' | 'setColorScheme' | 'setFontScale' | 'setReminderEnabled' | 'setReminderTime' | 'setReminderVibrate' | 'markReminderShown'> => ({
   updateAvatar: (emoji: string) => {
     const state = get();
     if (!state.user) return;
@@ -82,5 +82,28 @@ export const createProfileSlice = (set: Set, get: Get): Pick<AppState, 'updateAv
   setFontScale: (scale: number) => {
     const clamped = Math.min(1.2, Math.max(0.9, Math.round(scale * 100) / 100));
     set({ fontScale: clamped });
+  },
+
+  // ── In-app log reminder ("alarm") ──────────────────────────────────────────
+  setReminderEnabled: (enabled: boolean) => {
+    // Re-enabling clears any stale "already shown" stamp so it can fire again today.
+    set(enabled ? { reminderEnabled: true, reminderLastShownDate: null } : { reminderEnabled: false });
+    track('log_reminder_toggled', { enabled });
+  },
+
+  setReminderTime: (time: string) => {
+    // Guard: only accept a well-formed 'HH:MM'. Changing the time resets the daily
+    // guard so a newly-chosen (later) time can still fire today.
+    if (!/^([01]?\d|2[0-3]):[0-5]\d$/.test(time)) return;
+    set({ reminderTime: time, reminderLastShownDate: null });
+  },
+
+  setReminderVibrate: (enabled: boolean) => {
+    set({ reminderVibrate: enabled });
+  },
+
+  // Stamp the local date the reminder fired so it only fires once per day.
+  markReminderShown: (dateStr: string) => {
+    set({ reminderLastShownDate: dateStr });
   },
 });

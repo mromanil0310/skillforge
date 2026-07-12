@@ -44,6 +44,10 @@ function getPersistable(state: AppState) {
     savedPostIds: state.savedPostIds,
     colorScheme: state.colorScheme,
     fontScale: state.fontScale,
+    reminderEnabled: state.reminderEnabled,
+    reminderTime: state.reminderTime,
+    reminderVibrate: state.reminderVibrate,
+    reminderLastShownDate: state.reminderLastShownDate,
     careerOutcomes: state.careerOutcomes,
     submittedSignalSkillIds: state.submittedSignalSkillIds,
   };
@@ -170,6 +174,10 @@ export function attachPersistence(store: StoreApi<AppState>): void {
       last.savedPostIds === p.savedPostIds &&
       last.colorScheme === p.colorScheme &&
       last.fontScale === p.fontScale &&
+      last.reminderEnabled === p.reminderEnabled &&
+      last.reminderTime === p.reminderTime &&
+      last.reminderVibrate === p.reminderVibrate &&
+      last.reminderLastShownDate === p.reminderLastShownDate &&
       last.careerOutcomes === p.careerOutcomes &&
       last.submittedSignalSkillIds === p.submittedSignalSkillIds
     ) return;
