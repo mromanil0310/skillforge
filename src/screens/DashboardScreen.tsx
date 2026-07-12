@@ -15,7 +15,7 @@ import CelebrationOverlay from '../components/CelebrationOverlay';
 import DemandBadge from '../components/DemandBadge';
 import { useAppStore, CAREER_PATHS, ALL_SKILLS, getDecayStage, DecayStage, getBurnoutSignal, BurnoutSignal } from '../store/appStore';
 import { localDateStr, localDaysAgoStr } from '../utils/dates';
-import { effectiveStreak } from '../domain/progression';
+import { effectiveStreak, CUSTOM_SKILL_COMPLETION_XP } from '../domain/progression';
 import { PaceMode } from '../types';
 import {
   useThemeColors,
@@ -555,15 +555,15 @@ export default function DashboardScreen() {
   const pathOutputs = outputs.filter((o) => pathSkillIds.has(o.skillId));
   // XP bar uses skill-completion XP only — raw output XP (o.xpGained) includes base type XP which
   // would inflate the numerator against totalPathSkillXP (denominator = skill rewards only).
-  const totalPathSkillXP = (focusPath?.skillIds ?? []).reduce((s, sid) => {
-    const sk = ALL_SKILLS.find((x) => x.id === sid);
-    return s + (sk?.xpReward ?? 0);
-  }, 0);
-  const pathCompletedSkillXP = (focusPath?.skillIds ?? []).reduce((s, sid) => {
-    if (userSkills[sid]?.status !== 'completed') return s;
-    const sk = ALL_SKILLS.find((x) => x.id === sid);
-    return s + (sk?.xpReward ?? 0);
-  }, 0);
+  // Custom-path skills aren't in ALL_SKILLS — they grant CUSTOM_SKILL_COMPLETION_XP on complete.
+  // Without the fallback, custom paths compute 0/0 and the track falsely reads "Path Complete!".
+  const pathSkillXpFor = (sid: string) =>
+    ALL_SKILLS.find((x) => x.id === sid)?.xpReward ?? CUSTOM_SKILL_COMPLETION_XP;
+  const totalPathSkillXP = (focusPath?.skillIds ?? []).reduce((s, sid) => s + pathSkillXpFor(sid), 0);
+  const pathCompletedSkillXP = (focusPath?.skillIds ?? []).reduce(
+    (s, sid) => (userSkills[sid]?.status === 'completed' ? s + pathSkillXpFor(sid) : s),
+    0,
+  );
   const pathXpBarPct = totalPathSkillXP > 0 ? Math.round(Math.min(100, (pathCompletedSkillXP / totalPathSkillXP) * 100)) : 0;
   const pathPct = focusPath && focusPath.total > 0 ? Math.round((focusPath.completed / focusPath.total) * 100) : 0;
   const pathXpRemaining = Math.max(0, totalPathSkillXP - pathCompletedSkillXP);
